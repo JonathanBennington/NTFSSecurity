@@ -28,20 +28,25 @@ As the imported data also contains the path you do not need to specify the item
 
     Import-Csv .\permissions.csv | Get-NTFSAccess
 
-All cmdlets can handle SIDs and also SamAccountNames. The output contains always both unless a SID is not resolvable.
-The types.ps1xml file is extending the common objects with some useful information and the format.ps1xml file formats all the output in almost the same way like the Get-ChildItem output.
+All cmdlets can handle SIDs and also SamAccountNames. The output always contains both unless a SID is not resolvable.
+The types.ps1xml file is extending the common objects with some useful information. The format.ps1xml file formats all the output in the same way as the Get-ChildItem output.
 
-By implementing the [Process Privilege http://processprivileges.codeplex.com/] project the cmdlets can activate the required privileges for setting the ownership for example.
+By implementing the [Process Privilege http://processprivileges.codeplex.com/] project, the cmdlets can activate the required privileges for setting the ownership.
 
 
 # Add-NTFSAccess
-Adds a specific ace to the current object. This can be done in just one line:
+
+Adds a specific account to the current object: 
 
      Get-Item .\VMWare | Add-NTFSAccess -Account Contoso\JohnD -AccessRights FullControl
 
 # Get-NTFSAccess
 
-Gives you a list of all permissions . normally you are interested not in the inherited permissions so the switch ExcludeInherited can be useful
+Gets a list of all permissions for a given directory:
+
+    Get-Item F:\backup | Get-NTFSAccess
+
+Gets a list of all non-inherited permissions for a given directory:
 
     Get-Item F:\backup | Get-NTFSAccess –ExcludeInherited
 
@@ -52,16 +57,17 @@ Gives you a list of all permissions . normally you are interested not in the inh
 
 # Get-NTFS Orphaned  Access
 
-Lists all permissions that can no longer be resolved. This normally happens if the account is no longer available so the permissions show up as a SID and not as an account name.
+Get a list of all permissions that can no longer be resolved. If the account is no longer available, the permissions will show up as SIDs rather than account names.
+
+    Get-Item F:\backup -Recurse | Get-NTFSOrphanedAccess
 
 To remove all non-resolvable or orphaned permissions you can use the following line. But be very careful with that as maybe the account is not resolvable due to a network problem.
 
-    dir -Recurse | Get-NTFSOrphanedAccess | Remove-NTFSAccess
+    Get-Item F:\backup -Recurse | Get-NTFSOrphanedAccess | Remove-NTFSAccess
 
 # Remove- NTFSAccess
 
-Removes the permission for a certain account. As the pipeline is supported it takes also
-ACEs coming from Get-NTFSAccess or Get-NTFSOrphanedAccess
+Removes the permission for a certain account. As the pipeline is supported it takes also ACEs coming from Get-NTFSAccess or Get-NTFSOrphanedAccess
 
 
 # Get-NTFSEffectiveAccess
@@ -81,11 +87,12 @@ It can be a problem if certain files or folders on a volume have inheritance dis
 
 # Disable-NTFSInheritance
 See Enable-NTFSInheritance
+    Get-Item .\Data -Recurse | Disable-NTFSAccessInheritance
 
 # Get-NTFSOwner
 Shows the owner of a file or folder
 
-    dir -Recurse | Get-NTFSOwner
+    Get-Item .\Data -Recurse | Get-NTFSOwner
 
 # Set-NTFSOwner
 Sets the owner to a specific account like:
